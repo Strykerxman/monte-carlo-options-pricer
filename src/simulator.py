@@ -18,14 +18,13 @@ class StockPriceSimulator():
         self.n_sims = n_sims
         
         self.rng = np.random.default_rng(42)
+        np.random.seed(42)
         #self.sample = np.random.normal(mu, sigma)
 
-    def simulate_GBM(self) -> np.ndarray:
+    def simulate_gbm(self) -> np.ndarray:
         """
         Simulates stock price paths using Geometric Brownian Motion (GBM).
 
-        :param seed: The seed for random number generation to ensure reproducibility
-        :type seed: int
         :return: A 2D array of simulated stock price paths where each row corresponds to a simulation and each column corresponds to a time step
         :rtype: ndarray
         """
@@ -43,8 +42,6 @@ class StockPriceSimulator():
         """
         Simulates stock price paths using a normal distribution for increments (Arithmetic Brownian Motion).
         
-        :param seed: The seed for random number generation to ensure reproducibility
-        :type seed: int
         :return: A 2D array of simulated stock price paths where each row corresponds to a simulation and each column corresponds to a time step
         :rtype: ndarray
         """
@@ -64,6 +61,11 @@ class StockPriceSimulator():
         return paths
     
     def simulate_student_t(self, df: int = 5, seed: int = 42) -> np.ndarray:
+        """
+        Simulates stock price paths using a Student's t distribution for increments.
+
+        :param df: Degrees of freedom for the Student's t distribution (default is 5).
+        """
         paths = np.zeros((self.n_sims, self.n_steps + 1))
         paths[:, 0] = self.s0
 
@@ -82,6 +84,15 @@ class StockPriceSimulator():
     def plot_paths_and_terminal_hist(self, show_paths: int = 100, gbm_paths: np.ndarray = None, abm_paths: np.ndarray = None, student_t_paths: np.ndarray = None):
         """
         Plot simulated paths and terminal histograms for only the provided methods.
+
+        :param show_paths: The number of paths to show in the plot (default is 100).
+        :type show_paths: int
+        :param gbm_paths: A 2D array of simulated GBM paths (optional).
+        :type gbm_paths: np.ndarray, optional
+        :param abm_paths: A 2D array of simulated ABM paths (optional).
+        :type abm_paths: np.ndarray, optional
+        :param student_t_paths: A 2D array of simulated Student's t paths (optional).
+        :type student_t_paths: np.ndarray, optional
         """
         available = []
         if gbm_paths is not None:
@@ -90,7 +101,9 @@ class StockPriceSimulator():
             available.append(("abm", abm_paths, "ABM Simulated Stock Price Paths", "ABM: Terminal Prices", "orange"))
         if student_t_paths is not None:
             available.append(("student_t", student_t_paths, "Student's t Simulated Stock Price Paths", "Student's t: Terminal Prices", "green"))
-
+        else: 
+            raise ValueError("At least one of gbm_paths, abm_paths, or student_t_paths must be provided to plot_paths_and_terminal_hist()")
+        
         n_figs = len(available)
         if n_figs == 0:
             raise ValueError("No path arrays provided to plot_paths_and_terminal_hist()")
